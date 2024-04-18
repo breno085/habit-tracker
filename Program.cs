@@ -56,9 +56,9 @@ internal class Program
                     case "2":
                         Insert();
                         break;
-                    // case "3":
-                    //     Delete();
-                    //     break;
+                    case "3":
+                        Delete();
+                        break;
                     // case "4":
                     //     Update();
                     //     break;
@@ -130,6 +130,11 @@ internal class Program
 
                 connection.Close();
             }
+        }
+
+        private static void Delete()
+        {
+
         }
 
         internal static string GetDateInput()
