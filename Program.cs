@@ -47,8 +47,9 @@ internal class Program
                 switch (command)
                 {
                     case "0":
-                        Console.WriteLine("\nGoodbye");
+                        Console.WriteLine("\nGoodbye\n\n");
                         closeApp = true;
+                        Environment.Exit(0);
                         break;
                     case "1":
                         GetAllRecords();
@@ -182,7 +183,7 @@ internal class Program
                     Console.WriteLine($"\nRecord with Id = {recordId} doesn't exist.");
                     Console.WriteLine("Press any key to continue.");
                     Console.ReadLine();
-                    
+
                     connection.Close();
                     Update();
                 }
@@ -213,6 +214,12 @@ internal class Program
             if (dateInput == "0")
                 GetUserInput();
 
+            while (!DateTime.TryParseExact(dateInput, "dd-MM-yy", new CultureInfo("en-US"), DateTimeStyles.None, out _))
+            {
+                Console.WriteLine("Invalid date. Format: (dd-MM-yy). Type 0 to return to main menu or try again: \n");
+                dateInput = Console.ReadLine();
+            }
+
             return dateInput;
         }
 
@@ -224,6 +231,12 @@ internal class Program
 
             if (numberInput == "0") 
                 GetUserInput();
+
+            while (!Int32.TryParse(numberInput, out _) || Convert.ToInt32(numberInput) < 0)
+            {
+                Console.WriteLine("\nInvalid number, try again.");
+                numberInput = Console.ReadLine();
+            }
 
             int finalInput = Convert.ToInt32(numberInput);
 
