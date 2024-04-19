@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/home/brenoacioli/Documents/Habit-Tracker/Habit-Tracker.csproj": {}
+    "C:\\Users\\Beatriz Acioli\\habit-tracker\\Habit-Tracker.csproj": {}
   },
   "projects": {
-    "/home/brenoacioli/Documents/Habit-Tracker/Habit-Tracker.csproj": {
+    "C:\\Users\\Beatriz Acioli\\habit-tracker\\Habit-Tracker.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/brenoacioli/Documents/Habit-Tracker/Habit-Tracker.csproj",
+        "projectUniqueName": "C:\\Users\\Beatriz Acioli\\habit-tracker\\Habit-Tracker.csproj",
         "projectName": "Habit-Tracker",
-        "projectPath": "/home/brenoacioli/Documents/Habit-Tracker/Habit-Tracker.csproj",
-        "packagesPath": "/home/brenoacioli/.nuget/packages/",
-        "outputPath": "/home/brenoacioli/Documents/Habit-Tracker/obj/",
+        "projectPath": "C:\\Users\\Beatriz Acioli\\habit-tracker\\Habit-Tracker.csproj",
+        "packagesPath": "C:\\Users\\Beatriz Acioli\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Beatriz Acioli\\habit-tracker\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/brenoacioli/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Beatriz Acioli\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -32,6 +32,11 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -59,7 +64,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.101/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
