@@ -5,6 +5,7 @@ using System.Configuration;
 internal class Program
 {
     // static string connectionString = @"Data Source=habit-Tracker.db";
+    // Version 1.0
     static string connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");
     static void Main(string[] args)
     {
@@ -73,7 +74,7 @@ internal class Program
             Console.ReadLine();
         }
     }
-    
+
     private static void GetAllRecords()
     {
         Console.Clear();
