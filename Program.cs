@@ -8,9 +8,97 @@ internal class Program
     // static string connectionString = @"Data Source=habit-Tracker.db";
     // Version 1.0
     static string connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");
+
     static void Main(string[] args)
     {
+        GenerateHabits();
+
         CreateOrSelectHabits();
+    }
+
+    static void GenerateHabits()
+    {
+        //Generate multiple habits when the database gets created for the first time
+        string[,] habits =
+        {
+            {"Coding", "Hours"},
+            {"Reading", "Pages"},
+            {"Guitar Practise", "Hours"},
+            {"Exercise", "Hours"},
+            {"Drinking Water", "Cups"},
+            {"Meditaton", "Minutes"}
+        };
+
+        for (int i = 0; i < habits.GetLength(0); i++)
+        {
+            string habitName = habits[i, 0].Replace(" ", "_");
+            string unit = habits[i, 1];
+            TableCreator(habitName, unit);
+            PopulateTableWithRandomData(habitName, unit, 100); // Insert 100 random records
+        }
+    }
+
+    static void PopulateTableWithRandomData(string habitName, string unitName, int recordCount)
+    {
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            connection.Open();
+
+            using (var checkCmd = connection.CreateCommand())
+            {
+                checkCmd.CommandText = $"SELECT COUNT(*) FROM {habitName}";
+
+                long count = (long)checkCmd.ExecuteScalar();
+
+                if (count == 0)
+                {
+                    List<GenericRecord> tableData = new List<GenericRecord>();
+
+                    Random random = new Random();
+
+                    for (int i = 0; i < recordCount; i++)
+                    {
+                        GenericRecord record = new GenericRecord();
+
+                        record.Id = i + 1;
+                        record.Date = RandomDay(random);
+                        record.Unit = random.Next(12);
+
+                        tableData.Add(record);
+                    }
+
+                    foreach (var record in tableData)
+                    {
+                        using (var tableCmd = connection.CreateCommand())
+                        {
+                            //String Concatenation Approach
+                            //Drawbacks: Vulnerable to SQL injection, potential type conversion issues.
+                            // tableCmd.CommandText =
+                            // $"INSERT INTO {habitName} (Date, {unitName}) VALUES ('{record.Date.ToString("dd-MM-yy")}', {record.Unit.ToString()})";
+
+                            // tableCmd.ExecuteNonQuery();
+
+                            //Parameterized Queries Approach
+                            //Benefits: Safe from SQL injection, clear and maintainable, ensures type safety.
+                            tableCmd.CommandText = $"INSERT INTO {habitName} (Date, {unitName}) VALUES (@Date, @Unit)";
+                            tableCmd.Parameters.AddWithValue("@Date", record.Date.ToString("dd-MM-yy"));
+                            tableCmd.Parameters.AddWithValue("@Unit", record.Unit);
+
+                            tableCmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static DateTime RandomDay(Random random)
+    {
+        DateTime start = new DateTime(2024, 1, 1);
+
+        int range = (DateTime.Today - start).Days;
+
+        return start.AddDays(random.Next(range));
     }
 
     static void CreateOrSelectHabits()
@@ -54,7 +142,7 @@ internal class Program
                     }
 
                     break;
-                
+
                 case "3":
                     Console.WriteLine("TBD");
                     break;
@@ -111,7 +199,7 @@ internal class Program
                             tables.Add(reader.GetString(0));
                         }
 
-                        for (int i = 0; i < tables.Count -1; i++)
+                        for (int i = 0; i < tables.Count - 1; i++)
                         {
                             Console.WriteLine($"{i + 1} - {tables[i]}");
                         }
@@ -174,7 +262,7 @@ internal class Program
                     $@"CREATE TABLE IF NOT EXISTS {tableName} (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Date TEXT,
-                        {unit} DOUBLE
+                        {unit} INT
                     )";
 
                 tableCmd.ExecuteNonQuery();
@@ -254,9 +342,9 @@ internal class Program
                 if (reader.HasRows)
                 {
                     unitName = reader.GetName(2);
-                    
+
                     while (reader.Read())
-                    {   
+                    {
                         tableData.Add(
                         new GenericRecord
                         {
@@ -289,7 +377,7 @@ internal class Program
 
         string unitName = GetUnitName(habitName);
 
-        int quantity = GetNumberInput($"\nPlease insert the number of {unitName}.\n", habitName);
+        int quantity = GetNumberInput($"\nPlease insert the number of {unitName} (no decimals allowed).\n", habitName);
 
         using (var connection = new SqliteConnection(connectionString))
         {
@@ -366,7 +454,7 @@ internal class Program
 
                 string unitName = GetUnitName(habitName);
 
-                int quantity = GetNumberInput($"\nPlease insert the number of {unitName}.\n", habitName);
+                int quantity = GetNumberInput($"\nPlease insert the number of {unitName} (no decimals allowed).\n", habitName);
 
                 var tableCmd = connection.CreateCommand();
 
@@ -424,5 +512,5 @@ public class GenericRecord
 {
     public int Id { get; set; }
     public DateTime Date { get; set; }
-    public double Unit { get; set; }
+    public int Unit { get; set; }
 }
