@@ -106,7 +106,7 @@ internal class Program
         bool closeApp = false;
 
         do
-        {
+        {   Console.WriteLine("\nHabits Menu");
             Console.WriteLine("\nWhat would you like to do?\n");
             Console.WriteLine("0 - Close application");
             Console.WriteLine("1 - Create a new habit");
@@ -166,7 +166,7 @@ internal class Program
 
     public static string UnitOfMeasurement()
     {
-        Console.WriteLine("Enter an unit of measurement (e.g., Steps, Pages, Kilometers, Hours, Minutes, Bottles, Cups, Liters, etc):");
+        Console.WriteLine("Enter an unit of measurement (e.g., Steps, Pages, Kilometers, Hours, Minutes, Bottles, Cups, Liters, etc): ");
         string unit = Console.ReadLine();
 
         return unit;
@@ -284,7 +284,8 @@ internal class Program
             Console.WriteLine("Type 2 to Insert Record");
             Console.WriteLine("Type 3 to Delete Record");
             Console.WriteLine("Type 4 to Update Record");
-            Console.WriteLine("Type 5 to go back to create or select another habit");
+            Console.WriteLine("Type 5 to View Habit Reports (i.e. how many times the user ran in a year? how many kms?)");
+            Console.WriteLine("Type 6 to go back to the habits menu");
             Console.WriteLine("--------------------------------\n");
 
             string command = Console.ReadLine();
@@ -309,6 +310,9 @@ internal class Program
                     Update(habitName);
                     break;
                 case "5":
+                    Console.WriteLine("TBD");
+                    break;
+                case "6":
                     CreateOrSelectHabits();
                     break;
                 default:
