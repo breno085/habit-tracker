@@ -284,7 +284,7 @@ internal class Program
             Console.WriteLine("Type 2 to Insert Record");
             Console.WriteLine("Type 3 to Delete Record");
             Console.WriteLine("Type 4 to Update Record");
-            Console.WriteLine("Type 5 to View Habit Reports (i.e. how many times the user ran in a year? how many kms?)");
+            Console.WriteLine("Type 5 to View Habit Reports (i.e. how many times did you ran in a year? how many kms?)");
             Console.WriteLine("Type 6 to go back to the habits menu");
             Console.WriteLine("--------------------------------\n");
 
@@ -310,7 +310,7 @@ internal class Program
                     Update(habitName);
                     break;
                 case "5":
-                    Console.WriteLine("TBD");
+                    HabitReports(habitName);
                     break;
                 case "6":
                     CreateOrSelectHabits();
@@ -324,6 +324,40 @@ internal class Program
         }
     }
 
+    public static void HabitReports(string habitName)
+    {
+        Console.WriteLine("What would you like to check?");
+        Console.WriteLine("0 - Close Applicaton");
+        Console.WriteLine("1 - Annual Habit Summary:\n" 
+        + $"Calculate how many times you performed {habitName} habit and the total units accumulated in the past year.");
+        Console.WriteLine("2 - Monthly Habit Breakdown:\n"
+        + $"Calculate how many times you performed {habitName} habit and the total units accumulated each month.");
+        Console.WriteLine("3 - Weekly Habit Average:\n"
+        + $"Calculate the average number of times you performed {habitName} habit and the average units accumulated per week.");
+        Console.WriteLine("4 - Go Back to Main Menu");
+
+        string option = Console.ReadLine();
+
+        switch(option)
+        {
+            case "0":
+                Environment.Exit(0);
+                break;
+            case "1":
+                break;
+            case "2":
+                break;
+            case "3":
+                break;
+            case "4":
+                GetUserInput(habitName);
+                break;
+            default:
+                Console.WriteLine("Invalid option, please try again.");
+                HabitReports(habitName);
+                break;
+        }
+    }
     private static void GetAllRecords(string tableName)
     {
         Console.Clear();
