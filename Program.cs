@@ -6,6 +6,7 @@ using System.Reflection.Metadata.Ecma335;
 internal class Program
 {
     // static string connectionString = @"Data Source=habit-Tracker.db";
+
     // Version 1.0
     static string connectionString = ConfigurationManager.AppSettings.Get("ConnectionString");
 
@@ -106,7 +107,8 @@ internal class Program
         bool closeApp = false;
 
         do
-        {   Console.WriteLine("\nHabits Menu");
+        {
+            Console.WriteLine("\nHabits Menu");
             Console.WriteLine("\nWhat would you like to do?\n");
             Console.WriteLine("0 - Close application");
             Console.WriteLine("1 - Create a new habit");
@@ -323,31 +325,33 @@ internal class Program
             Console.ReadLine();
         }
     }
-
     public static void HabitReports(string habitName)
     {
         Console.WriteLine("What would you like to check?");
         Console.WriteLine("0 - Close Applicaton");
-        Console.WriteLine("1 - Annual Habit Summary:\n" 
+        Console.WriteLine("1 - Annual Habit Summary:\n"
         + $"Calculate how many times you performed {habitName} habit and the total units accumulated in the past year.");
         Console.WriteLine("2 - Monthly Habit Breakdown:\n"
         + $"Calculate how many times you performed {habitName} habit and the total units accumulated each month.");
         Console.WriteLine("3 - Weekly Habit Average:\n"
         + $"Calculate the average number of times you performed {habitName} habit and the average units accumulated per week.");
-        Console.WriteLine("4 - Go Back to Main Menu");
+        Console.WriteLine("4 - Go Back to Main Menu\n");
 
         string option = Console.ReadLine();
 
-        switch(option)
+        switch (option)
         {
             case "0":
                 Environment.Exit(0);
                 break;
             case "1":
+                ShowYearlySums(habitName);
                 break;
             case "2":
+                ShowMonthlySums(habitName);
                 break;
             case "3":
+                ShowWeeklyAvg(habitName);
                 break;
             case "4":
                 GetUserInput(habitName);
@@ -356,6 +360,170 @@ internal class Program
                 Console.WriteLine("Invalid option, please try again.");
                 HabitReports(habitName);
                 break;
+        }
+    }
+
+    public static void ShowYearlySums(string habitName)
+    {
+        string unitName = GetUnitName(habitName);
+        long count;
+        int totalUnits;
+
+        DateTime minDate = MinDate(habitName);
+
+        if (minDate == DateTime.MinValue)
+        {   
+            Console.WriteLine($"No data found in {habitName}.");
+            return;
+        }
+
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            connection.Open();
+
+            using (var checkCmd = connection.CreateCommand())
+            {
+                checkCmd.CommandText = 
+                $@"SELECT COUNT(*) as DateCount
+                    FROM {habitName}
+                    WHERE 
+                        strftime('%Y-%m-%d', '20' || substr(Date, 7, 2) || '-' || substr(Date, 4, 2) || '-' || substr(Date, 1, 2)) 
+                        BETWEEN @MinDate AND date('now');";
+                
+                checkCmd.Parameters.AddWithValue("@MinDate", minDate.ToString("yyyy-MM-dd"));
+                
+                count = (long)checkCmd.ExecuteScalar();
+            }
+
+            using (var tableCmd = connection.CreateCommand())
+            {
+                tableCmd.CommandText = 
+                $@"SELECT SUM({unitName}) FROM {habitName};";
+                
+                var result = tableCmd.ExecuteScalar();
+
+                totalUnits = result != DBNull.Value ? Convert.ToInt32(result) : 0;
+            }
+        }
+        Console.WriteLine($"{habitName}");
+
+        Console.WriteLine($"Habit Executed: {count} times, Total {unitName}: {totalUnits}");
+    }
+
+    public static void ShowMonthlySums(string habitName)
+    {
+        string unitName = GetUnitName(habitName);
+
+        DateTime minDate = MinDate(habitName);
+
+        if (minDate == DateTime.MinValue)
+        {   
+            Console.WriteLine($"No data found in {habitName}.");
+            return;
+        }
+
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            connection.Open();
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = 
+                $@"SELECT 
+                        strftime('%Y-%m', '20' || substr(Date, 7, 2) || '-' || substr(Date, 4, 2) || '-' || substr(Date, 1, 2)) as Month,
+                        SUM({unitName}) as TotalUnits
+                    FROM {habitName}
+                    WHERE 
+                        strftime('%Y-%m-%d', '20' || substr(Date, 7, 2) || '-' || substr(Date, 4, 2) || '-' || substr(Date, 1, 2)) 
+                        BETWEEN @MinDate AND date('now')
+                    GROUP BY strftime('%Y-%m', '20' || substr(Date, 7, 2) || '-' || substr(Date, 4, 2) || '-' || substr(Date, 1, 2))
+                    ORDER BY Month;";
+
+                command.Parameters.AddWithValue("@MinDate", minDate.ToString("yyyy-MM-dd"));
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string month = reader.GetString(0);
+                        int totalUnits = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
+                        
+                        Console.WriteLine($"{habitName}");
+
+                        Console.WriteLine($"Month: {month}, Total {unitName}: {totalUnits}");
+                    }
+                }
+            }
+        }
+    }
+
+    public static void ShowWeeklyAvg(string habitName)
+    {
+        string unitName = GetUnitName(habitName);
+
+        DateTime minDate = MinDate(habitName);
+
+        if (minDate == DateTime.MinValue)
+        {   
+            Console.WriteLine($"No data found in {habitName}.");
+            return;
+        }
+
+        double weeks = (DateTime.Now - minDate).TotalDays / 7.0;
+
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            connection.Open();
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = 
+                $@"SELECT 
+                        COUNT(*) / {weeks} as AvgHabitsPerWeek,
+                        SUM({unitName} / {weeks}) as AvgUnitsPerWeek
+                    FROM {habitName}
+                    WHERE 
+                        strftime('%Y-%m-%d', '20' || substr(Date, 7, 2) || '-' || substr(Date, 4, 2) || '-' || substr(Date, 1, 2)) 
+                        BETWEEN @MinDate AND date('now');";
+                
+                command.Parameters.AddWithValue("@MinDate", minDate.ToString("yyyy-MM-dd"));
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        double habitWeeklyAvg = reader.GetDouble(0);
+                        double unitWeeklyAvg = reader.GetDouble(1);
+
+                        Console.WriteLine($"{habitName}\nAverage times executing the habit per week: {habitWeeklyAvg:F1}\n" +
+                                        $"Average {unitName} per week: {unitWeeklyAvg:F1}");
+                    }
+                }
+            }
+        }
+    }
+
+    public static DateTime MinDate(string habitName)
+    {
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            connection.Open();
+
+            using (var minDateCmd = connection.CreateCommand())
+            {
+                minDateCmd.CommandText = 
+                $@"SELECT MIN(strftime('%Y-%m-%d', '20' || substr(Date, 7, 2) || '-' || substr(Date, 4, 2) || '-' || substr(Date, 1, 2))) 
+                FROM {habitName};";
+
+                var result = minDateCmd.ExecuteScalar();
+
+                if (result == DBNull.Value || result == null)
+                {
+                    return DateTime.MinValue;
+                }
+
+                return Convert.ToDateTime(result);
+            }
         }
     }
     private static void GetAllRecords(string tableName)
